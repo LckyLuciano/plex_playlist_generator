@@ -2,7 +2,7 @@
 
 A fork of robobeaver6's fine work, dumbed down for a simpleton like me, working on python3. The main feature i changed is it'll just grab any random episodes from any tv show on a whitelist.
 
-##Usage
+## Usage
 ```
 playlist_generator.py [-h] [--name NAME] [--number NUMBER] [--server]
                              [--baseurl BASEURL] [--token TOKEN] [--account]
