@@ -12,18 +12,30 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-PL_TITLE = 'Random Season, Next Unwatched'
+PL_TITLE = 'Lucky Dip'
 # list of series to never include
-BLACKLIST = ['Downton Abbey',
-             'Poldark (2015)'
-             ]
-
+WHITELIST = ['The Simpsons',
+             'Futurama',
+             'The Inbetweeners',
+             'Friday Night Dinner',
+             'Black Mirror',
+             'The Big Bang Theory',
+             'Brooklyn Nine-Nine',
+             'Family Guy',
+             'The IT Crowd',
+             'Modern Family',
+             'The Office (US)',
+             'Outnumbered',
+             'Parks and Recreation',
+             'Peep Show',
+             'South Park'
+            ]
 
 def get_args():
     parser = argparse.ArgumentParser(description='Create playlist of unwatched episodes from random shows '
                                                  'but in correct episode order.')
-    parser.add_argument('--name', help='Playlist Name', default='Random Season, Next Unwatched')
-    parser.add_argument('--number', '-n', help='Number of episodes to add to play list', type=int, default=10)
+    parser.add_argument('--name', help='Playlist Name', default='Lucky Dip')
+    parser.add_argument('--number', '-n', help='Number of episodes to add to play list', type=int, default=300)
     group_server = parser.add_argument_group('Server Connection Method')
     group_server.add_argument('--server', action='store_true', help='Server connection Method')
     group_server.add_argument('--baseurl', '-b', help='Base URL of Server')
@@ -37,45 +49,27 @@ def get_args():
     return parser.parse_args()
 
 
-def get_random_episodes(all_shows, n=10):
+def get_random_episodes(all_shows, n=200):
     show_episodes = dict()
     for show in all_shows.all():
-        if show.isWatched:
+        if show.title not in WHITELIST:
             continue
-        if show.title in BLACKLIST:
-            logger.debug(f'GET_EPISODES: Show Blacklisted: {show.title}')
-            continue
-        show_episodes[show.title] = show.unwatched()
-        # remove series 0 specials
-        while show_episodes[show.title][0].seasonNumber == 0:
-            season_episode = show_episodes[show.title][0].seasonEpisode
-            episode_title = show_episodes[show.title][0].seasonEpisode
-            show_episodes[show.title].pop(0)
-            logger.debug(f'GET_EPISODES: Series 0 Episode Removed '
-                         f'{show.title} - {episode_title} - {season_episode}')
+        show_episodes[show.title] = show.episodes()
     next_n = []
     while len(next_n) < n:
         show_name = random.choice(list(show_episodes.keys()))
-        if len(show_episodes[show_name]) >0:
-            if skipped_missing(all_shows.get(title=show_name), show_episodes[show_name][0]):
-                continue
-            next_n.append(show_episodes[show_name].pop(0))
-        else:
-            logger.debug(f'GET_EPISODES: No more unwatched episodes for {show_name}')
-            continue
+        print(show_episodes[show_name])
+        next_n.append(random.choice(show_episodes[show_name]))
     return next_n
 
 
 def tvdb_season_count(show, season):
     try:
-        logger.debug(f'TVDB: Getting show "{show.title}"')
         tvdb_id = int(re.search('thetvdb://([0-9]+)?', show.guid).group(1))
         tv = tvdb_api.Tvdb(language='en')
         season_list = tv[tvdb_id][season]
-        logger.debug(f'TVDB: Previous Season Length = {len(season_list)}')
         return len(season_list)
     except tvdb_api.tvdb_seasonnotfound:
-        logger.warning(f'TVDB: Unable to look up "{show.title}" ({tvdb_id})')
         return None
 
 
@@ -85,24 +79,18 @@ def skipped_missing(show, episode):
         episode_num = episode.index
 
         if episode.index > 1:
-            logger.debug(f'SKIP_CHECK: Check same Season for {show.title} S{season_num}E{episode_num-1}')
             show.get(season=episode.seasonNumber, episode=episode.index-1)
-            logger.debug(f'SKIP_CHECK: Passed')
             return False
         elif episode.seasonNumber > 1:
             previous_season_count = tvdb_season_count(show, season_num - 1)
             if previous_season_count is None:
                 return False
-            logger.debug(f'SKIP_CHECK: Check previous Season for {show.title} S{season_num-1}E{previous_season_count}')
             # check last episode of previous season
             show.get(season=episode.seasonNumber - 1, episode=previous_season_count)
-            logger.debug(f'SKIP_CHECK: Passed')
             return False
         else:
-            logger.debug(f'SKIP_CHECK: First Episode of First Season. {show.title} {season_num}')
             return False
     except NotFound:
-        logger.info(f'SKIP_CHECK: Previous Episode not Found for {show.title} S{season_num}E{episode_num}')
         return True
 
 
@@ -123,14 +111,11 @@ def main():
         exit(1)
 
     all_shows = plex.library.section('TV Shows')
-
     # shows = get_unwatched_shows(all_shows.all())
     episodes = get_random_episodes(all_shows, n=args.number)
     for episode in episodes:
         season_episode = episode.seasonEpisode
         # skipped = skipped_missing(all_shows.get(title=episode.grandparentTitle), episode)
-        print(f'{episode.grandparentTitle} - {episode.parentTitle} - '
-              f'{episode.index}. {episode.title}')
 
     # playlist = Playlist(plex, )
     plex.playlist(title=args.name).delete()
