@@ -1,6 +1,6 @@
 # Plex Random Series Playlist Generator
 
-A fork of robobeaver6's fine work, dumbed down for a simpleton like me, working on python3. The main feature i changed is it'll just grab any random episodes from any tv show on a whitelist.
+A fork of robobeaver6's fine work, forked from JoeGandy after that, working on python3. The main feature he changed is it'll just grab any random episodes from any tv show on a whitelist. I just made some minor modifications to the whitelist, playlist, and library name.
 
 ## Usage
 ```
