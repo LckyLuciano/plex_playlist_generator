@@ -41,3 +41,5 @@ e.g. `playlist_generator.py --server --baseurl "http://172.16.1.100:32400" --tok
 ### Authentication Token
 To get your Auth token, browse to an episode in the web UI. Click on the `...` video and select `Get Info`.  In the 
 popup window select `View XML` in the URL there is the `X-Plex-Token=XXXXXXXXXXXXXX`
+
+### You'll need to edit your TV Library name in the script.  
