@@ -12,29 +12,38 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-PL_TITLE = 'Lucky Dip'
-# list of series to never include
-WHITELIST = ['The Simpsons',
+PL_TITLE = '- Random Episodes of Good Shows -'
+# list of series to include
+WHITELIST = ['Another Period',
+             'Aqua Teen Hunger Force',
+             'Beavis and Butthead',
+             'Broad City',
+             'Curb Your Enthusiasm',
+             'Dual Survival',
+             'Flight of the Conchords',
              'Futurama',
-             'The Inbetweeners',
-             'Friday Night Dinner',
-             'Black Mirror',
-             'The Big Bang Theory',
-             'Brooklyn Nine-Nine',
-             'Family Guy',
-             'The IT Crowd',
+             'Getting On (US)',
+             'Good Eats',
+             'It\'s Always Sunny in Philadelphia',
+             'Jeopardy!',
+             'Key & Peele',
+             'King of the Hill',
+             'Letterkenny',
              'Modern Family',
-             'The Office (US)',
-             'Outnumbered',
              'Parks and Recreation',
-             'Peep Show',
-             'South Park'
+             'Party Down',
+             'South Park',
+             'The Life & Times of Tim',
+             'The Office (US)',
+             'The Price Is Right',
+             'Veep',
+             'Workaholics'
             ]
 
 def get_args():
     parser = argparse.ArgumentParser(description='Create playlist of unwatched episodes from random shows '
                                                  'but in correct episode order.')
-    parser.add_argument('--name', help='Playlist Name', default='Lucky Dip')
+    parser.add_argument('--name', help='Playlist Name', default='- Random Episodes of Good Shows -')
     parser.add_argument('--number', '-n', help='Number of episodes to add to play list', type=int, default=300)
     group_server = parser.add_argument_group('Server Connection Method')
     group_server.add_argument('--server', action='store_true', help='Server connection Method')
@@ -109,8 +118,8 @@ def main():
         plex = PlexServer(baseurl, token)
     else:
         exit(1)
-
-    all_shows = plex.library.section('TV Shows')
+    #update tv library name here >>>> 
+    all_shows = plex.library.section('HD TV Shows')
     # shows = get_unwatched_shows(all_shows.all())
     episodes = get_random_episodes(all_shows, n=args.number)
     for episode in episodes:
